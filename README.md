@@ -8,7 +8,9 @@ Su aplicación web permite partir de una canción conocida o de un perfil musica
 editable, comparar resultados y consultar sus características. Los laboratorios
 de clasificación de géneros complementan el producto como experimentos.
 
-**[Probar la demo](https://music-intelligence-lab.streamlit.app/)** ·
+**Aplicación en Streamlit:** [https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/)
+
+[Cómo usarla](#primera-recomendación) ·
 [Ejecutar en local](#ejecución-local) ·
 [Resultados y limitaciones](#resultados-y-limitaciones)
 
@@ -53,6 +55,14 @@ en CSV, sin entrenar modelos durante la interacción.
   y [multiclase](reports/metrics/multiclass_final_test_evaluation.json); no deben
   interpretarse como predicciones infalibles ni como probabilidades calibradas.
 
+## Aplicación publicada
+
+Puedes abrir la versión publicada desde el navegador, sin instalar Python:
+
+**[https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/)**
+
+Los comandos de la siguiente sección son únicamente para ejecutar el proyecto en tu equipo.
+
 ## Ejecución local
 
 Requiere Python 3.12.x y [uv](https://docs.astral.sh/uv/).
@@ -60,7 +70,6 @@ Desde la raíz del repositorio:
 
 ```powershell
 uv sync
-uv run python -c "import spotify_intelligence"
 uv run streamlit run streamlit_app.py
 ```
 
