@@ -17,15 +17,16 @@ def seed_track_card(row: Any) -> None:
     duration = format_duration(row.get("duration_ms"))
     popularity = row.get("popularity_median")
 
-    st.markdown(
-        f"**{track_name}** — {artists}  \n"
-        f"Álbum: {album} · Duración: {duration} · "
-        f"Popularidad: {popularity if popularity is not None else '—'}"
-    )
+    with st.container(border=True):
+        st.markdown(
+            f"**{track_name}** — {artists}  \n"
+            f"Álbum: {album} · Duración: {duration} · "
+            f"Popularidad: {popularity if popularity is not None else '—'}"
+        )
 
 
 def metric_row(cells: list[tuple[str, object]]) -> None:
     """Render a row of ``st.metric`` cells."""
     columns = st.columns(len(cells))
     for column, (label, value) in zip(columns, cells, strict=False):
-        column.metric(label, str(value))
+        column.metric(label, str(value), border=True)

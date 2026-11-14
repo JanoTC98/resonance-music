@@ -12,11 +12,11 @@ FEATURE_LABELS = {
     "danceability": "Bailabilidad",
     "energy": "Energía",
     "loudness": "Volumen",
-    "speechiness": "Speechiness",
-    "acousticness": "Acústica",
-    "instrumentalness": "Instrumental",
-    "liveness": "Liveness",
-    "valence": "Valence",
+    "speechiness": "Presencia de voz hablada",
+    "acousticness": "Carácter acústico",
+    "instrumentalness": "Carácter instrumental",
+    "liveness": "Presencia de público",
+    "valence": "Positividad musical",
     "tempo": "Tempo (BPM)",
 }
 
@@ -32,10 +32,7 @@ def _format_explanation(differences: list[dict]) -> str:
 
 def render() -> None:
     st.title("Recomendar por canción")
-    st.caption(
-        "Encuentra grabaciones acústicamente cercanas a una canción del catálogo "
-        "(unidad: recording_group_id)."
-    )
+    st.caption("Explora canciones con características musicales similares a la que selecciones.")
 
     tracks = resources.load_tracks()
     genres = resources.load_genre_catalog()
@@ -50,6 +47,7 @@ def render() -> None:
         st.caption("Escribe una canción o artista para empezar.")
         return
 
+    st.subheader("Tu canción de referencia")
     seed_track_card(seed)
     seed_group = str(seed["recording_group_id"])
 
@@ -76,13 +74,14 @@ def render() -> None:
     )
 
     affinity_config = recommender_config["track_recommender"].get("genre_affinity", {})
-    genre_affinity = st.toggle(
-        "Priorizar canciones del mismo género de la semilla",
-        value=bool(affinity_config.get("enabled_default", False)),
-        help="Reordena los candidatos acústicamente más cercanos para que "
-        "compartan género con la semilla (variante experimental).",
-        key="track_genre_affinity",
-    )
+    with st.expander("Opciones avanzadas", expanded=False):
+        genre_affinity = st.toggle(
+            "Priorizar canciones del mismo género de la canción de referencia",
+            value=bool(affinity_config.get("enabled_default", False)),
+            help="Reordena los candidatos acústicamente más cercanos para que "
+            "compartan género con la canción de referencia (variante experimental).",
+            key="track_genre_affinity",
+        )
 
     if st.button("Recomendar", type="primary", key="track_run"):
         results = recommender.recommend(
@@ -97,19 +96,34 @@ def render() -> None:
 
         display = tables.result_display_frame(results)
         st.markdown(f"### {len(results)} recomendaciones")
-        st.dataframe(display, width="stretch")
+        st.caption(
+            "La similitud compara características musicales, no predice cuánto te gustará una canción. "
+            "Si activas la prioridad de género, el orden también tiene en cuenta ese criterio."
+        )
+        st.dataframe(
+            display,
+            width="stretch",
+            hide_index=True,
+            column_config=tables.recommendation_column_config(),
+        )
         tables.download_csv_button(display, "recomendaciones_por_cancion.csv")
 
-        with st.expander("Explicaciones por característica"):
-            for position, row in results.iterrows():
+        st.subheader("Características comparadas")
+        st.caption(
+            "Abre una canción para ver sus diferencias respecto a la referencia. "
+            "Cada diferencia usa la escala de su característica; no es una contribución "
+            "individual a la similitud."
+        )
+        for position, (_, row) in enumerate(results.iterrows(), start=1):
+            with st.expander(f"{position}. {row['track_name']} — {row['artists']}", expanded=False):
                 differences = row.get("feature_differences") or []
-                st.markdown(
-                    f"**{position + 1}. {row['track_name']}** — {row['artists']}  \n"
-                    f"Similitud coseno: {float(row['similarity']):.3f}"
-                )
+                st.caption(f"Similitud coseno: {float(row['similarity']):.3f}")
                 if differences:
-                    st.code(_format_explanation(differences), language="text")
-                st.divider()
+                    st.code(_format_explanation(differences), language="text", wrap_lines=True)
+                else:
+                    st.caption(
+                        "No hay un desglose de características disponible para esta canción."
+                    )
 
         messages.info_note(
             "La similitud coseno es una medida de distancia acústica, no una probabilidad de gusto."

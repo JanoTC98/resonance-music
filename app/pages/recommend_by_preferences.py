@@ -20,7 +20,7 @@ def render() -> None:
     st.title("Recomendar por preferencias")
     st.caption(
         "Encuentra canciones cercanas a un perfil acústico ponderado, "
-        "partiendo de un preset editable o de un perfil manual."
+        "partiendo de un perfil inicial editable o de tus propios ajustes."
     )
 
     genres = resources.load_genre_catalog()
@@ -66,6 +66,7 @@ def render() -> None:
 
     diversity_config = recommender_config["preference_recommender"]["diversity"]
     with st.expander("Diversidad (MMR)", expanded=False):
+        st.caption("Esta opción equilibra la cercanía a tu perfil y la variedad entre resultados.")
         diversity_enabled = st.checkbox(
             "Activar reordenamiento por diversidad",
             value=False,
@@ -78,6 +79,7 @@ def render() -> None:
             value=float(diversity_config.get("lambda_default", 0.85)),
             step=0.05,
             key="pref_lambda",
+            help="Controla el equilibrio entre cercanía al perfil y variedad de canciones.",
         )
 
     if st.button("Recomendar", type="primary", key="pref_run"):
@@ -99,7 +101,22 @@ def render() -> None:
 
         display = tables.result_display_frame(results)
         st.markdown(f"### {len(results)} recomendaciones")
-        st.dataframe(display, width="stretch")
+        st.caption(
+            "La similitud se calcula a partir de la distancia ponderada a tu perfil: "
+            "cuanto menor es la distancia, mayor es la similitud. "
+            "Los pesos controlan la importancia de cada característica; no es una probabilidad de gusto."
+        )
+        if diversity_enabled:
+            st.caption(
+                "La diversidad está activada: el orden equilibra cercanía al perfil "
+                "y variedad, no solo similitud."
+            )
+        st.dataframe(
+            display,
+            width="stretch",
+            hide_index=True,
+            column_config=tables.recommendation_column_config(),
+        )
         tables.download_csv_button(display, "recomendaciones_por_preferencias.csv")
 
         messages.info_note(

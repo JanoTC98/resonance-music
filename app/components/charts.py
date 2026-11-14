@@ -13,6 +13,9 @@ def _base_layout(title: str, x_title: str, y_title: str) -> dict:
         "height": 360,
         "margin": {"l": 60, "r": 20, "t": 50, "b": 60},
         "showlegend": False,
+        "font": {"family": "sans-serif", "color": "#453c5c"},
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(0,0,0,0)",
     }
 
 
@@ -32,7 +35,9 @@ def score_bars(
                 x=scores,
                 y=labels,
                 orientation="h",
-                marker_color="#4C78A8",
+                marker_color="#31ada1",
+                marker_line_color="#51647a",
+                marker_line_width=1.5,
             )
         ]
     )
@@ -50,6 +55,16 @@ def audit_counts(
     y_title: str = "Recuento",
 ) -> go.Figure:
     """Return a vertical bar chart of categorical counts."""
-    figure = go.Figure(data=[go.Bar(x=categories, y=values, marker_color="#4C78A8")])
+    figure = go.Figure(
+        data=[
+            go.Bar(
+                x=categories,
+                y=values,
+                marker_color="#31ada1",
+                marker_line_color="#51647a",
+                marker_line_width=1.5,
+            )
+        ]
+    )
     figure.update_layout(**_base_layout(title, x_title, y_title))
     return figure

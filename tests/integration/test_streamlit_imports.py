@@ -9,6 +9,7 @@ from __future__ import annotations
 import importlib
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -88,3 +89,52 @@ def test_resources_are_cached() -> None:
         loader = getattr(resources, loader_name)
         assert callable(loader)
         assert hasattr(loader, "clear")
+
+
+def test_app_config_uses_resonance_title() -> None:
+    from spotify_intelligence.config import load_yaml_config
+
+    config = load_yaml_config("configs/app.yaml")
+    assert config["app"]["title"] == "Resonance"
+
+
+@pytest.mark.parametrize(
+    ("app_config", "expected"),
+    [({}, "Resonance"), ({"title": "Custom title"}, "Custom title")],
+)
+def test_router_page_title(
+    monkeypatch: pytest.MonkeyPatch, app_config: dict, expected: str
+) -> None:
+    router = importlib.import_module("streamlit_app")
+    ui = MagicMock()
+    monkeypatch.setattr(router, "st", ui)
+    monkeypatch.setattr(
+        router,
+        "load_yaml_config",
+        lambda path: {"app": {**app_config, "page_icon": "🎵", "layout": "wide"}},
+    )
+
+    router.main()
+
+    ui.set_page_config.assert_called_once_with(page_title=expected, page_icon="🎵", layout="wide")
+    assert ui.Page.call_count == 7
+    ui.navigation.return_value.run.assert_called_once_with()
+
+
+@pytest.mark.parametrize(
+    ("app_config", "expected"),
+    [({}, "Resonance"), ({"title": "Custom title"}, "Custom title")],
+)
+def test_home_page_title(monkeypatch: pytest.MonkeyPatch, app_config: dict, expected: str) -> None:
+    home = importlib.import_module("app.pages.home")
+    ui = MagicMock()
+    monkeypatch.setattr(home, "st", ui)
+    monkeypatch.setattr(home.resources, "load_app_config", lambda: {"app": app_config})
+    for loader in ("load_tracks", "load_recordings", "load_genre_catalog"):
+        monkeypatch.setattr(home.resources, loader, lambda: [])
+    monkeypatch.setattr(home, "metric_row", MagicMock())
+    monkeypatch.setattr(home, "info_note", MagicMock())
+
+    home.render()
+
+    ui.title.assert_called_once_with(expected)

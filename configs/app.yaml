@@ -1,6 +1,6 @@
 version: "app-config-v1"
 app:
-  title: "Spotify Music Intelligence"
+  title: "Resonance"
   page_icon: "🎵"
   layout: "wide"
   default_top_n: 10

@@ -1,6 +1,7 @@
 # Alcance del proyecto
 
-> **Proyecto:** Spotify Music Intelligence  
+> **Proyecto:** Resonance
+>
 > **Estado:** implementación activa  
 > **Versión de referencia:** 2.0
 

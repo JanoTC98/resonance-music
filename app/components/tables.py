@@ -6,6 +6,25 @@ import pandas as pd
 import streamlit as st
 
 
+def recommendation_column_config() -> dict:
+    """Label recommendation columns without changing frame or CSV schemas."""
+    return {
+        "track_name": st.column_config.TextColumn("Canción", width="medium"),
+        "artists": st.column_config.TextColumn("Artista", width="medium"),
+        "album_name": st.column_config.TextColumn("Álbum"),
+        "genres": st.column_config.TextColumn("Géneros"),
+        "similarity": st.column_config.NumberColumn(
+            "Similitud",
+            format="%.3f",
+            help="Cercanía musical calculada por el recomendador; no es una probabilidad de gusto.",
+        ),
+        "duration": st.column_config.TextColumn("Duración", help="Minutos y segundos."),
+        "popularity_median": st.column_config.NumberColumn(
+            "Popularidad", format="%.0f", help="Popularidad registrada en el catálogo."
+        ),
+    }
+
+
 def download_csv_button(
     frame: pd.DataFrame,
     filename: str,

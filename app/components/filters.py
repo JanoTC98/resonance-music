@@ -21,10 +21,19 @@ _EXPLICIT_LABELS = {"all": "Todos", "explicit": "Explícitas", "non_explicit": "
 FEATURE_LABELS = {
     "energy": "Energía",
     "danceability": "Bailabilidad",
-    "valence": "Valence (positividad)",
+    "valence": "Positividad musical",
     "acousticness": "Acústica",
     "instrumentalness": "Instrumental",
     "tempo": "Tempo (BPM)",
+}
+
+FEATURE_HELP = {
+    "energy": "Intensidad y actividad percibida de la canción.",
+    "danceability": "Adecuación del ritmo para bailar.",
+    "valence": "Carácter positivo o alegre asociado al sonido.",
+    "acousticness": "Presencia de características acústicas en la grabación.",
+    "instrumentalness": "Predominio de instrumentos frente a voces.",
+    "tempo": "Velocidad del ritmo, en pulsaciones por minuto.",
 }
 
 
@@ -118,11 +127,12 @@ def render_preference_profile(
     preset_keys = list(presets.keys())
     preset_labels = {key: presets[key]["label"] for key in preset_keys}
     preset_key = st.selectbox(
-        "Preset",
+        "Perfil inicial",
         options=preset_keys,
         index=0,
         format_func=lambda key: preset_labels.get(key, key),
         key=f"{prefix}_preset",
+        help="Elige un punto de partida. Puedes ajustar sus valores y la importancia de cada variable.",
     )
     selected = presets[preset_key]
 
@@ -139,7 +149,7 @@ def render_preference_profile(
     def weight_key(feature: str) -> str:
         return f"{prefix}_weight_{feature}_{generation}"
 
-    with st.expander("Editar valores", expanded=True):
+    with st.expander("Editar valores", expanded=False):
         values: dict[str, float] = {}
         for feature in BASIC_FEATURES:
             low, high = VALUE_RANGES[feature]
@@ -151,9 +161,14 @@ def render_preference_profile(
                 value=float(selected["values"][feature]),
                 step=float(step),
                 key=value_key(feature),
+                help=FEATURE_HELP.get(feature),
             )
 
-    with st.expander("Pesos (0 = ignorar, 3 = alta importancia)", expanded=True):
+    with st.expander("Pesos (0 = ignorar, 3 = alta importancia)", expanded=False):
+        st.caption(
+            "Los pesos indican qué características importan más al comparar canciones. "
+            "Un peso de 0 ignora la variable; debe quedar al menos un peso distinto de 0."
+        )
         weights: dict[str, int] = {}
         for feature in BASIC_FEATURES:
             weights[feature] = st.selectbox(

@@ -1,22 +1,98 @@
-# Spotify Music Intelligence
+# Resonance — Inteligencia y recomendación musical
 
-Proyecto end-to-end de ciencia de datos y machine learning que transforma un catálogo musical en:
+**Descubre música a partir de una canción o de tus preferencias.**
 
-1. Un recomendador basado en una canción.
-2. Un recomendador basado en preferencias y presets editables.
-3. Un laboratorio supervisado de clasificación multietiqueta de géneros.
-4. Un experimento multiclase de género acústico dominante.
-5. Una aplicación web multipágina en Streamlit.
-6. Un pipeline reproducible de datos y modelos.
-7. Un repositorio profesional con pruebas, documentación, CI y despliegue.
+Resonance es un proyecto personal de ciencia de datos y machine learning para
+explorar un catálogo musical mediante recomendaciones basadas en contenido.
+Su aplicación web permite partir de una canción conocida o de un perfil musical
+editable, comparar resultados y consultar sus características. Los laboratorios
+de clasificación de géneros complementan el producto como experimentos.
 
-**Aplicación desplegada:** [https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/)
+**[Probar la demo](https://music-intelligence-lab.streamlit.app/)** ·
+[Ejecutar en local](#ejecución-local) ·
+[Resultados y limitaciones](#resultados-y-limitaciones)
+
+**Tecnologías:** Python · Streamlit · Pandas · NumPy · scikit-learn · Plotly.
+
+## Vista previa
+
+![Inicio de Resonance con acceso al recomendador, guía de uso y resumen del catálogo](docs/images/resonance-home.png)
+
+*Captura de la ejecución local con la interfaz actualizada. La demo publicada
+puede diferir hasta el próximo despliegue.*
+
+## Qué puedes hacer
+
+| Recorrido | Qué ofrece |
+|---|---|
+| **Por canción** | Búsqueda por canción o artista, filtros y comparación de características con la canción de referencia. |
+| **Por preferencias** | Perfiles iniciales editables, importancia por característica y diversidad opcional. |
+| **Explorar el proyecto** | Auditoría del catálogo, laboratorios de géneros y metodología con sus limitaciones. |
+
+Ambos recomendadores muestran sus resultados en tablas y permiten descargarlos
+en CSV, sin entrenar modelos durante la interacción.
+
+### Primera recomendación
+
+1. Abre la demo y pulsa **Recomendar por canción**.
+2. Busca una canción o artista y selecciona la coincidencia que quieres usar.
+3. Pulsa **Recomendar** y abre las características comparadas de cada resultado.
+
+## Resultados y limitaciones
+
+- La [evaluación del recomendador](reports/metrics/track_recommender_evaluation.json)
+  registra autorrecomendaciones, duplicados, cumplimiento de filtros, cobertura
+  y latencia. Es una evaluación técnica, no una medición de satisfacción.
+- La [comparación de variantes](reports/experiments/recommender_relevance_analysis.json)
+  permite examinar el equilibrio entre coherencia de género, similitud y diversidad.
+  Priorizar un criterio no implica mejorar todos los demás.
+- **Similitud no significa probabilidad de gusto.** Las sugerencias dependen
+  del catálogo y sus características, no garantizan una preferencia personal.
+- Los clasificadores de géneros son experimentales. Sus resultados sobre test
+  están en los reportes [multietiqueta](reports/metrics/multilabel_final_test_evaluation.json)
+  y [multiclase](reports/metrics/multiclass_final_test_evaluation.json); no deben
+  interpretarse como predicciones infalibles ni como probabilidades calibradas.
+
+## Ejecución local
+
+Requiere Python 3.12.x y [uv](https://docs.astral.sh/uv/).
+Desde la raíz del repositorio:
+
+```powershell
+uv sync
+uv run python -c "import spotify_intelligence"
+uv run streamlit run streamlit_app.py
+```
+
+La aplicación utiliza los artefactos ya construidos. Si falta alguno, muestra
+un error claro; no lo entrena silenciosamente.
+
+| Página | Artefacto necesario | Script de construcción |
+|---|---|---|
+| Recomendar por canción | `models/recommender/v1/` | `scripts/build_recommender.py` |
+| Recomendar por preferencias | `models/preferences/v1/` | `scripts/build_preference_recommender.py` |
+| Laboratorio multietiqueta | `models/classifier/multilabel/` | `scripts/train_multilabel_classifier.py` |
+| Laboratorio de género dominante | `models/classifier/multiclass/` | `scripts/train_multiclass_classifier.py` |
+
+## Documentación
+
+- [Arquitectura](docs/architecture.md): organización del código y sus responsabilidades.
+- [Recomendadores](docs/spec/recommenders.md): métodos y reglas de recomendación.
+- [Aplicación](docs/spec/application.md): páginas, navegación y presentación de resultados.
+- [Despliegue](docs/deployment.md): ejecución publicada y requisitos de artefactos.
 
 ## Fuente del dataset
 
 Catálogo musical *Spotify Tracks Dataset* (≈ 114.000 filas) descargado de Kaggle:
 
 [Spotify Tracks Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/data)
+
+Resonance es un proyecto independiente, sin afiliación oficial con Spotify.
+
+## Detalle técnico
+
+<details>
+<summary>Pipeline y módulos implementados</summary>
 
 ## Funcionalidad implementada
 
@@ -49,7 +125,7 @@ Catálogo musical *Spotify Tracks Dataset* (≈ 114.000 filas) descargado de Kag
 - Filtros desactivados por defecto (explícito, género, duración, artista, popularidad mínima).
 - Explicaciones por característica y diferencia de tempo en BPM.
 - Evaluación offline en `reports/metrics/track_recommender_evaluation.json/.csv` (muestra de 200 semillas: 0 autorrecomendaciones, 0 duplicados, 100 % cumplimiento de filtros).
-- Variante experimental de **afinidad de género** como toggle desactivado por defecto en la app (botón "Priorizar canciones del mismo género de la semilla"); reordena el pool acústico recuperado para que los candidatos que comparten género con la semilla salgan primero, sin añadir candidatos fuera del pool.
+- Variante experimental de **afinidad de género** como control desactivado por defecto en las opciones avanzadas; prioriza canciones del mismo género de la referencia dentro del grupo de candidatos acústicos recuperados, sin añadir candidatos fuera de él.
 - Análisis de relevancia (`scripts/analyze_recommender_relevance.py`, 2000 semillas) en `reports/experiments/recommender_relevance_analysis.json` — evaluado con las métricas oficiales:
 
   | Variante | Coherencia@10 media | Coseno medio | Diversidad interna (std) | Artistas únicos por lista |
@@ -75,12 +151,12 @@ Catálogo musical *Spotify Tracks Dataset* (≈ 114.000 filas) descargado de Kag
 - Dataset multilabel con una fila por `recording_group_id` y matriz binaria `[n, 114]`.
 - Características primarias (`log_duration`, `key_sin/cos`, `mode`, `time_signature` one-hot fija) sin columnas prohibidas de identidad.
 - Split agrupado 70/15/15 congelado en `data/processed/splits.parquet` (hash `7cdb3f…b67`), intersecciones vacías y selección por menor desviación de prevalencia.
-- Experimentos A (excluye `audio_analysis_incomplete`) y B (imputación con medianas de train + indicador); B no mejora a A (M1: samples F1 0.1395 vs 0.1386).
+- Experimentos A (excluye `audio_analysis_incomplete`) y B (imputación con medianas de train + indicador); M1 obtiene samples F1 0.1386 en A y 0.1395 en B. Se evalúan sobre poblaciones de validación distintas, por lo que la diferencia no demuestra una mejora controlada.
 - Modelos M0 (frecuencia) y M1 (OneVsRest logistic, liblinear C=1.0) entrenados; M2 (ClassifierChain ×3), M3 (Extra Trees 400) y M4 (Random Forest 400) entrenados; M5/XGBoost deshabilitado.
 - Umbral global 0.10–0.90 optimizando samples F1 solo sobre validación; la app muestra Top-5 con aviso de umbral no superado.
 - Métricas (macro/micro/samples F1, Hamming, precision@3, recall@5, hit@3/5, coverage, LRAP, AP por etiqueta) en `reports/experiments/classifier_multilabel_comparison.json`.
-- Comparación final (validación): M0=0.0, M1=0.1386, M2=0.0718, M3=0.2522, M4=0.2867 samples F1. M3/M4 ganan en calidad pero son inviables para la app (22–28 GB y 78–90 s de latencia por consulta).
-- Modelo final aprobado por el propietario: **M1 (OneVsRest logistic)** por viabilidad en Streamlit (0,1 MB, ~135 ms). Evaluación única sobre test congelado en `reports/metrics/multilabel_final_test_evaluation.json` (samples F1 test=0.1360, macro F1=0.1377, hit@5=0.4573, Hamming=0.0352), consistente con validación (0.1386). *Nota: una primera versión de este reporte registró 0.0314 por un doble-escalado (`scaler.transform` sobre un test ya escalado); corregido en `scripts/evaluate_final_model.py` y re-evaluado.*
+- Comparación final (validación): M0=0.0, M1=0.1386, M2=0.0718, M3=0.2522, M4=0.2867 samples F1. M3/M4 obtienen mayores puntuaciones, pero sus artefactos ocupan 22–28 GB. Los 78–90 s registrados corresponden al lote completo de validación, no a una consulta individual.
+- Modelo final aprobado por el propietario: **M1 (OneVsRest logistic)** por viabilidad en Streamlit (0,08 MB; 133 ms de predicción media para el lote completo de validación). Evaluación única sobre test congelado en `reports/metrics/multilabel_final_test_evaluation.json` (samples F1 test=0.1360, macro F1=0.1377, hit@5=0.4573, Hamming=0.0352), consistente con validación (0.1386). *Nota: una primera versión de este reporte registró 0.0314 por un doble-escalado (`scaler.transform` sobre un test ya escalado); corregido en `scripts/evaluate_final_model.py` y re-evaluado.*
 - `scripts/evaluate_final_model.py` evalúa el test congelado únicamente con `--use-test`.
 - Notebook `notebooks/06_multilabel_classifier.ipynb`.
 
@@ -88,8 +164,8 @@ Catálogo musical *Spotify Tracks Dataset* (≈ 114.000 filas) descargado de Kag
 - Dataset de grabaciones monoetiqueta: 69.798 grupos; split agrupado congelado train 48.886 / validación 10.475 / test 10.437; 112/114 clases en train (conteos 47–717).
 - Experiment A (excluye `audio_analysis_incomplete`): las filas con análisis de audio incompleto no participan en ninguno de los tres conjuntos.
 - Modelos C0 (clase frecuente), C1 (logística lbfgs C=1.0), C2 (Extra Trees) y C3 (Random Forest) con `max_depth=12` y `n_estimators=300`.
-- Comparación (validación): C0 acc 0.0120, C1 acc 0.2234, C2 acc 0.2527, C3 acc 0.2866 (macro F1 0.0002 / 0.1622 / 0.1735 / 0.2097). Reporte en `reports/experiments/classifier_multiclass_comparison.json`.
-- C2/C3 ganan en calidad pero pesan ~650 MB cada uno; el propietario aprobó **C1** como modelo final (~0,5 MB, viable en Streamlit). C2/C3 se eliminaron tras consolidar el reporte.
+- Comparación verificable en `reports/experiments/classifier_multiclass_comparison.json`: C0 accuracy 0.0120 y macro F1 0.0002; C1 accuracy 0.2234 y macro F1 0.1622. El reporte conservado contiene C0/C1, no las métricas de C2/C3.
+- Modelo final aprobado por el propietario: **C1**, viable en Streamlit. Las cifras históricas de C2/C3 no se presentan como resultados verificables sin un reporte que las respalde.
 - Métricas sobre validación en `models/classifier/multiclass/<id_C1>/metrics_validation.json`.
 - Evaluación exploratoria sobre filas multigénero: validación Hit@1=0.195, Hit@3=0.392, Recall@5=0.284 (2.086 filas); test Hit@1=0.178, Hit@3=0.366, Recall@5=0.263 (2.123 filas).
 - Evaluación única sobre test congelado en `reports/metrics/multiclass_final_test_evaluation.json` (accuracy test=0.2191, macro F1=0.1605), consistente con validación.
@@ -104,6 +180,11 @@ Catálogo musical *Spotify Tracks Dataset* (≈ 114.000 filas) descargado de Kag
 - El recomendador excluye la propia grabación y también otras grabaciones de la misma canción (mismo título + artistas en otro `recording_group_id`) para no recomendar la misma obra como primera opción.
 - Carga de artefactos de clasificación en `src/spotify_intelligence/classification/serving.py` (M1_A/M1_B multietiqueta y C1 multiclase) con selector A/B en el laboratorio multietiqueta.
 - Resultados descargables en CSV, explicaciones por característica y avisos de limitaciones; sin branding oficial de Spotify.
+
+</details>
+
+<details>
+<summary>Comparativa de experimentos y métricas</summary>
 
 ## Comparativa de modelos evaluados
 
@@ -126,62 +207,45 @@ Sin comparación de modelos: es **no supervisado y determinista**. Distancia euc
 
 ### Tabla 1 · Clasificador multietiqueta — métricas de validación
 
-| Modelo | samples F1 | macro F1 | Hit@5 | Hamming | Tamaño | Latencia | Veredicto |
+| Modelo | samples F1 | macro F1 | Hit@5 | Hamming | Tamaño | Tiempo medio por lote de validación | Veredicto |
 |---|---:|---:|---:|---:|---:|---:|---|
 | M0 · frecuencia | 0,0000 | 0,0000 | 0,052 | 0,0108 | 0,0035 MB | 6,8 ms | Baseline trivial |
 | **M1 · OvR logística** | **0,1386** | 0,1406 | 0,463 | 0,0354 | 0,08 MB | 133 ms | **Final** · test: samples F1 0,1360 |
 | M2 · Classifier Chain | 0,0718 | 0,0744 | 0,192 | 0,0611 | 0,32 MB | 5.122 ms | No viable (peor que M1, ~38× lento) |
-| M3 · Extra Trees 400 | 0,2522 | 0,2619 | 0,574 | 0,0150 | 27,8 GB | 89.978 ms | Inviable: memoria + latencia |
-| M4 · Random Forest 400 | 0,2867 | 0,2883 | 0,599 | 0,0157 | 21,7 GB | 78.437 ms | Inviable: memoria + latencia |
+| M3 · Extra Trees 400 | 0,2522 | 0,2619 | 0,574 | 0,0150 | 27,8 GB | 89.978 ms | Descartado para despliegue por tamaño |
+| M4 · Random Forest 400 | 0,2867 | 0,2883 | 0,599 | 0,0157 | 21,7 GB | 78.437 ms | Descartado para despliegue por tamaño |
 
-M1 con experimento B (imputación de audio incompleto): samples F1 0,1395 → **no mejora a A (0,1386)**, por eso el experimento A es el de producción.
+M1 con experimento B (imputación de audio incompleto) registra samples F1 0,1395
+frente a 0,1386 en A. Los conjuntos de validación contienen 12.582 y 12.561 filas,
+respectivamente: no es una comparación sobre la misma población. A se mantiene
+como experimento de producción; estos resultados por sí solos no justifican
+atribuir su selección a una puntuación superior.
 
 ### Tabla 2 · Clasificador multiclase — métricas de validación
 
-| Modelo | Accuracy | macro F1 | Top-5 | Tamaño | Latencia | Veredicto |
-|---|---:|---:|---:|---:|---:|---|
-| C0 · clase frecuente | 0,0120 | 0,0002 | 0,046 | 0,3 MB | 2,6 ms | Baseline trivial |
-| **C1 · logística** | **0,2234** | 0,1622 | 0,490 | 0,5 MB | 33 ms | **Final** · test: accuracy 0,2191 |
-| C2 · Extra Trees | 0,2527 | 0,1735 | 0,519 | 690 MB | 2.067 ms | No viable (peso + ~60× lento) |
-| C3 · Random Forest | 0,2866 | 0,2097 | 0,562 | 657 MB | 2.171 ms | No viable (peso + ~60× lento) |
+| Modelo | Accuracy | macro F1 | Top-5 | Tiempo medio por lote de validación | Veredicto |
+|---|---:|---:|---:|---:|---|
+| C0 · clase frecuente | 0,0120 | 0,0002 | 0,046 | 1,85 ms | Baseline trivial |
+| **C1 · logística** | **0,2234** | 0,1622 | 0,490 | 32,94 ms | **Final** · test: accuracy 0,2191 |
 
-> Las latencias corresponden a la predicción sobre el **batch completo de validación** (~10,5–12,6 mil filas en una sola llamada), no a una consulta individual. Por fila: M1 ≈ 10 ms, C1 ≈ 3 ms, M3 ≈ 7 ms, M4 ≈ 6 ms, C2/C3 ≈ 0,2 ms. El criterio de descarte de árboles fue principalmente el tamaño de modelo frente a la memoria de despliegue, no la latencia por fila.
+Solo se incluyen C0/C1 porque son los modelos presentes en el reporte multiclase versionado.
 
-## Requisitos
+> Los tiempos de las tablas de clasificación son medias de predicción sobre el
+> **lote completo de validación**: 12.561 filas en el experimento multietiqueta A
+> y 10.475 en multiclase. No miden la latencia de una consulta individual ni el
+> tiempo total de respuesta de la aplicación. Dividirlos por el número de filas
+> no permite estimar la latencia de una petición individual.
 
-- Python 3.12.x
-- [uv](https://docs.astral.sh/uv/)
-
-## Instalación
-
-```powershell
-uv sync
-uv run python -c "import spotify_intelligence"
-```
-
-## Aplicación web
-
-La app está desplegada en [https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/).
-La app carga los artefactos ya construidos; no entrena. Si falta un artefacto, muestra cómo generarlo.
-
-```powershell
-uv run streamlit run streamlit_app.py
-```
-
-Requisitos previos por página:
-
-| Página | Artefacto necesario | Script |
-|---|---|---|
-| Recomendar por canción | `models/recommender/v1/` | `scripts/build_recommender.py` |
-| Recomendar por preferencias | `models/preferences/v1/` | `scripts/build_preference_recommender.py` |
-| Laboratorio multietiqueta | `models/classifier/multilabel/` | `scripts/train_multilabel_classifier.py` |
-| Laboratorio de género dominante | `models/classifier/multiclass/` | `scripts/train_multiclass_classifier.py` |
+</details>
 
 ## Despliegue
 
-Instrucciones para publicar en Streamlit Community Cloud (incluida la decisión de
-versionar los artefactos `data/processed/` y `models/`, ≈ 100 MB) se detallan en
-la documentación de despliegue.
+Las instrucciones para publicar en Streamlit Community Cloud se encuentran en
+la [guía de despliegue](docs/deployment.md).
+
+El nombre del producto es **Resonance** y el nombre previsto para el repositorio es
+`resonance-music`. La dirección actual de la demo y la referencia al repositorio
+en la guía se conservan hasta confirmar su cambio; no representan una nueva URL publicada.
 
 ## Calidad
 
