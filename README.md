@@ -8,7 +8,7 @@ Su aplicación web permite partir de una canción conocida o de un perfil musica
 editable, comparar resultados y consultar sus características. Los laboratorios
 de clasificación de géneros complementan el producto como experimentos.
 
-**Aplicación en Streamlit:** [https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/)
+**Aplicación en Streamlit:** [https://resonance-music.streamlit.app/](https://resonance-music.streamlit.app/)
 
 [Cómo usarla](#primera-recomendación) ·
 [Ejecutar en local](#ejecución-local) ·
@@ -59,7 +59,7 @@ en CSV, sin entrenar modelos durante la interacción.
 
 Puedes abrir la versión publicada desde el navegador, sin instalar Python:
 
-**[https://music-intelligence-lab.streamlit.app/](https://music-intelligence-lab.streamlit.app/)**
+**[https://resonance-music.streamlit.app/](https://resonance-music.streamlit.app/)**
 
 Los comandos de la siguiente sección son únicamente para ejecutar el proyecto en tu equipo.
 
@@ -252,9 +252,7 @@ Solo se incluyen C0/C1 porque son los modelos presentes en el reporte multiclase
 Las instrucciones para publicar en Streamlit Community Cloud se encuentran en
 la [guía de despliegue](docs/deployment.md).
 
-El nombre del producto es **Resonance** y el nombre previsto para el repositorio es
-`resonance-music`. La dirección actual de la demo y la referencia al repositorio
-en la guía se conservan hasta confirmar su cambio; no representan una nueva URL publicada.
+El nombre del producto es **Resonance** y su repositorio es `resonance-music`.
 
 ## Calidad
 
